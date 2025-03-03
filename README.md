@@ -43,7 +43,7 @@ Check [working with cmake](https://www.nsnam.org/docs/manual/html/working-with-c
 
 It is important to use the `opengym` as the name of the ns3-gym app directory. 
 
-3. Configure and build ns-3 project:
+5. Configure and build ns-3 project:
 ```
 cd ../../
 ./ns3 configure --enable-examples
@@ -51,7 +51,7 @@ cd ../../
 ```
 Note: Opengym Protocol Buffer messages (C++ and Python) are build during configure.
 
-4. Install ns3gym located in model/ns3gym (Python3 required)
+6. Install ns3gym located in model/ns3gym (Python3 required)
 ```
 cd ./contrib/opengym/
 ```
@@ -65,15 +65,15 @@ source ./ns3gym-venv/bin/activate
 pip3 install ./model/ns3gym
 ```
 
-5. (Optional) Install all libraries required by your agent (like tensorflow, keras, etc.).
+7. (Optional) Install all libraries required by your agent (like tensorflow, keras, etc.).
 
-6. Run example:
+8. Run example:
 ```
 cd ./contrib/opengym/examples/opengym/ 
 ./simple_test.py
 ```
 
-7. (Optional) Start ns-3 simulation script and Gym agent separately in two terminals (useful for debugging):
+9. (Optional) Start ns-3 simulation script and Gym agent separately in two terminals (useful for debugging):
 ```
 # Terminal 1
 ./ns3 run "opengym"
