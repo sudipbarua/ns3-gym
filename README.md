@@ -6,7 +6,9 @@ ns3-gym
 Installation
 ============
 
-1. Install all required dependencies required by ns-3.
+We recommend using Linux (e.g. Ubuntu 22 or higher).
+
+1. Install all dependencies required by ns-3.
 ```
 # minimal requirements for C++:
 apt-get install gcc g++ python3 python3-pip cmake
@@ -21,9 +23,18 @@ apt-get install libprotobuf-dev
 apt-get install protobuf-compiler
 apt-get install pkg-config
 ```
-3. Clone ns3-gym repository in to `contrib` directory and change the branch:
+
+3. Download and install ns3
+
 ```
-cd ./contrib
+wget https://www.nsnam.org/releases/ns-allinone-3.40.tar.bz2
+tar xf ns-allinone-3.40.tar.bz2
+cd ns-allinone-3.40
+```
+
+4. Clone ns3-gym repository into `contrib` directory and change the branch:
+```
+cd ./ns-3.40/contrib
 git clone https://github.com/tkn-tub/ns3-gym.git ./opengym
 cd opengym/
 git checkout app-ns-3.36+
@@ -32,28 +43,37 @@ Check [working with cmake](https://www.nsnam.org/docs/manual/html/working-with-c
 
 It is important to use the `opengym` as the name of the ns3-gym app directory. 
 
-3. Configure and build ns-3 project:
+5. Configure and build ns-3 project:
 ```
+cd ../../
 ./ns3 configure --enable-examples
 ./ns3 build
 ```
 Note: Opengym Protocol Buffer messages (C++ and Python) are build during configure.
 
-4. Install ns3gym located in model/ns3gym (Python3 required)
+6. Install ns3gym located in model/ns3gym (Python3 required)
 ```
 cd ./contrib/opengym/
+```
+```
 pip3 install --user ./model/ns3gym
 ```
+or
+```
+python3 -m venv ns3gym-venv
+source ./ns3gym-venv/bin/activate
+pip3 install ./model/ns3gym
+```
 
-5. (Optional) Install all libraries required by your agent (like tensorflow, keras, etc.).
+7. (Optional) Install all libraries required by your agent (like tensorflow, keras, etc.).
 
-6. Run example:
+8. Run example:
 ```
 cd ./contrib/opengym/examples/opengym/ 
 ./simple_test.py
 ```
 
-7. (Optional) Start ns-3 simulation script and Gym agent separately in two terminals (useful for debugging):
+9. (Optional) Start ns-3 simulation script and Gym agent separately in two terminals (useful for debugging):
 ```
 # Terminal 1
 ./ns3 run "opengym"
@@ -62,6 +82,7 @@ cd ./contrib/opengym/examples/opengym/
 cd ./contrib/opengym/examples/opengym/ 
 ./test.py --start=0
 ```
+
 
 Examples
 ========
