@@ -4,7 +4,8 @@
 import scipy.io as io
 import gym
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+# import tensorflow.contrib.slim as slim
+import tf_slim as slim
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
