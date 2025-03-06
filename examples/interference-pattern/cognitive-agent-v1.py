@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import gym
+# import gym
 import tensorflow as tf
 # import tensorflow.contrib.slim as slim
 import numpy as np
@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from ns3gym import ns3env
 
-env = gym.make('ns3-v0')
+# env = gym.make('ns3-v0')          # causes errors like The `info` returned by `step()` must be a python dictionary, actual type: <class 'str'>. Use the wrapper instead
+env = ns3env.Ns3Env()
 ob_space = env.observation_space
 ac_space = env.action_space
 print("Observation space: ", ob_space,  ob_space.dtype)
@@ -21,11 +22,14 @@ a_size = ac_space.n
 model = keras.Sequential()
 model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
 model.add(keras.layers.Dense(a_size, activation='softmax'))
-model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+# model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+#               loss='categorical_crossentropy',
+#               metrics=['accuracy'])
+
+model.compile(optimizer=keras.optimizers.Adam(0.001),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
-
-total_episodes = 200
+total_episodes = 2
 max_env_steps = 100
 env._max_episode_steps = max_env_steps
 

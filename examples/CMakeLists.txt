@@ -9,28 +9,28 @@ build_lib_example(
     ${libwifi}
 )
 
-build_lib_example(
-  NAME linear-mesh
-  SOURCE_FILES linear-mesh/sim.cc
-  LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libinternet}
-    ${libopengym}
-    ${libwifi}
-)
+# build_lib_example(
+#   NAME linear-mesh
+#   SOURCE_FILES linear-mesh/sim.cc
+#   LIBRARIES_TO_LINK
+#     ${libapplications}
+#     ${libcore}
+#     ${libinternet}
+#     ${libopengym}
+#     ${libwifi}
+# )
 
-build_lib_example(
-  NAME linear-mesh-2
-  SOURCE_FILES linear-mesh-2/sim.cc
-               linear-mesh-2/mygym.cc
-  LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libinternet}
-    ${libopengym}
-    ${libwifi}
-)
+# build_lib_example(
+#   NAME linear-mesh-2
+#   SOURCE_FILES linear-mesh-2/sim.cc
+#                linear-mesh-2/mygym.cc
+#   LIBRARIES_TO_LINK
+#     ${libapplications}
+#     ${libcore}
+#     ${libinternet}
+#     ${libopengym}
+#     ${libwifi}
+# )
 
 build_lib_example(
   NAME opengym-1
@@ -63,3 +63,12 @@ build_lib_example(
     ${libpoint-to-point-layout}
     ${libptp}
 )
+
+# build_lib_example(
+#   NAME lorawan-rl-adr
+#   SOURCE_FILES lorawan_rl_adr/lorawan_rl_adr.cc
+#                lorawan_rl_adr/sim.cc
+#   LIBRARIES_TO_LINK
+#     ${libcore}
+#     ${libopengym}
+# )

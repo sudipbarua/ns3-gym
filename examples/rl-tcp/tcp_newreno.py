@@ -54,3 +54,50 @@ class TcpNewReno(TcpEventBased):
         actions = [new_ssThresh, new_cWnd]
 
         return actions
+    
+
+########## Sample code for DQN ##########
+import torch
+import torch.nn as nn  
+import torch.optim as optim
+
+class DQN(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(DQN, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, output_dim)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+class TcpDqn(TcpEventBased):
+    """docstring for TcpNewReno"""
+    def __init__(self):
+        super(TcpNewReno, self).__init__()
+        self.dqn = DQN(input_dim=9, output_dim=2)  # Example dimensions
+        self.optimizer = optim.Adam(self.dqn.parameters())
+        self.criterion = nn.MSELoss()
+
+    def get_action(self, obs, reward, done, info):
+        state = torch.tensor(obs, dtype=torch.float32)
+        with torch.no_grad():
+            action = self.dqn(state).numpy()
+
+        new_ssThresh, new_cWnd = action
+
+        # Ensure the actions are valid
+        new_ssThresh = max(2 * obs[6], new_ssThresh)
+        new_cWnd = max(1, new_cWnd)
+
+        # return actions
+        actions = [int(new_ssThresh), int(new_cWnd)]
+
+        return actions
+
+    def train(self, state, action, reward, next_state, done):
+        # Implement your training logic here
+        pass

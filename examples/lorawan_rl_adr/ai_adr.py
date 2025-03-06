@@ -1,0 +1,1 @@
+# Here we define the neural networks, the action getters (form the neural network) and the 
