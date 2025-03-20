@@ -31,9 +31,12 @@ namespace ns3
 
             // Packet tracing and data/state/observation fetching interfaces
             virtual void UplinkPktTrace();
-            // virtual void 
-
-
+            virtual void SetRssiSnr(double rssi, double snr);
+            virtual void SetDr(uint8_t dr);
+            virtual void SetTxPower(uint8_t txPower);	
+            virtual void SetEnergyLevel(double energyLevel);
+            virtual uint8_t GetNewDr();
+            virtual uint8_t GetNewTxPower();
 
         protected:
             uint32_t m_nodeId;

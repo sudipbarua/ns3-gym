@@ -68,19 +68,17 @@ main(int argc, char* argv[])
     double maxRandomLossDB = 10;
     double minSpeedMetersPerSecond = 2;
     double maxSpeedMetersPerSecond = 16;
-    std::string adrType = "ns3::AdrComponent";
+    std::string adrType = "ns3::AdrRL";
     uint32_t openGymPort = 5555;
-
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("verbose", "Whether to print output or not", verbose);
-    cmd.AddValue("MultipleGwCombiningMethod", "ns3::AdrComponent::MultipleGwCombiningMethod");
+    cmd.AddValue("MultipleGwCombiningMethod", "ns3::AdrRL::MultipleGwCombiningMethod");
     cmd.AddValue("MultiplePacketsCombiningMethod",
-                "ns3::AdrComponent::MultiplePacketsCombiningMethod");
-    cmd.AddValue("HistoryRange", "ns3::AdrComponent::HistoryRange");
+                "ns3::AdrRL::MultiplePacketsCombiningMethod");
+    cmd.AddValue("HistoryRange", "ns3::AdrRL::HistoryRange");
     cmd.AddValue("MType", "ns3::EndDeviceLorawanMac::MType");
     cmd.AddValue("EDDRAdaptation", "ns3::EndDeviceLorawanMac::EnableEDDataRateAdaptation");
-    cmd.AddValue("ChangeTransmissionPower", "ns3::AdrComponent::ChangeTransmissionPower");
     cmd.AddValue("AdrEnabled", "Whether to enable Adaptive Data Rate (ADR)", adrEnabled);
     cmd.AddValue("nDevices", "Number of devices to simulate", nDevices);
     cmd.AddValue("PeriodsToSimulate", "Number of periods (20m) to simulate", nPeriodsOf20Minutes);
@@ -114,7 +112,8 @@ main(int argc, char* argv[])
     // LogComponentEnable ("NetworkScheduler", LOG_LEVEL_ALL);
     // LogComponentEnable ("NetworkStatus", LOG_LEVEL_ALL);
     // LogComponentEnable ("EndDeviceStatus", LOG_LEVEL_ALL);
-    LogComponentEnable("AdrComponent", LOG_LEVEL_ALL);
+    LogComponentEnable("AiAdrEnv", LOG_LEVEL_ALL);
+    LogComponentEnable("AdrRL", LOG_LEVEL_ALL);
     // LogComponentEnable("ClassAEndDeviceLorawanMac", LOG_LEVEL_ALL);
     // LogComponentEnable ("LogicalLoraChannelHelper", LOG_LEVEL_ALL);
     // LogComponentEnable ("MacCommand", LOG_LEVEL_ALL);
@@ -131,9 +130,6 @@ main(int argc, char* argv[])
 
     // ************** OpenGym Environment ************** //
     Ptr<OpenGymInterface> openGymInterface = CreateObject<OpenGymInterface> (openGymPort);
-    Ptr<LorawanGymEnv> myGymEnv = CreateObject<LorawanGymEnv> (); // This is our custom opengym env. Here we provide whatever parameter we need to create the space, the obeservation, and controlling/ending criteria  
-    myGymEnv->SetOpenGymInterface(openGymInterface);
-    
     
     // Create a simple wireless channel
     ///////////////////////////////////
@@ -365,7 +361,7 @@ main(int argc, char* argv[])
     Simulator::Stop(simulationTime);
     Simulator::Run();
     // *************Stop Gym environment************* //
-    myGymEnv->NotifySimulationEnd();
+    openGymInterface->NotifySimulationEnd();
     Simulator::Destroy();
 
     std::cout << tracker.CountMacPacketsGlobally(Seconds(1200 * (nPeriodsOf20Minutes - 2)),

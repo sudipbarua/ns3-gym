@@ -44,6 +44,13 @@ public:
     AdrRL();           //!< Default constructor
     ~AdrRL() override; //!< Destructor
 
+    /**
+     * Set the Gym environment.
+     * \param gymEnv Pointer to the Gym environment.
+     * \return void
+     */
+    void CreateGymEnv();
+
     void OnReceivedPacket(Ptr<const Packet> packet,
                         Ptr<EndDeviceStatus> status,
                         Ptr<NetworkStatus> networkStatus) override;
@@ -52,21 +59,8 @@ public:
 
     void OnFailedReply(Ptr<EndDeviceStatus> status, Ptr<NetworkStatus> networkStatus) override;
 
-protected:
-    virtual void CreateGymEnv();
-
 
 private:
-    /**
-     * ADR is meant to optimize radio modulation parameters of end devices to improve energy
-     * consuption and radio resource utilization.  
-     *
-     * \param newDataRate [out] new data rate value selected for the end device.
-     * \param newTxPower [out] new tx power value selected for the end device.
-     * \param status State representation of the current end device.
-     */
-    void AdrImplementation(uint8_t* newDataRate, uint8_t* newTxPower, Ptr<EndDeviceStatus> status);
-
     /**
      * Convert spreading factor values [7:12] to respective data rate values [0:5].
      *
@@ -131,6 +125,7 @@ private:
      */
     int GetTxPowerIndex(int txPower);
 
+    Ptr<LorawanGymEnv> m_gymEnv; //!< Pointer to the Gym environment
     enum CombiningMethod tpAveraging;      //!< TX power from gateways policy
     int historyRange;                      //!< Number of previous packets to consider
     enum CombiningMethod historyAveraging; //!< Received SNR history policy

@@ -10,7 +10,7 @@ namespace lorawan
 // LinkAdrRequest commands management //
 ////////////////////////////////////////
 
-NS_LOG_COMPONENT_DEFINE("AiAdrEnv");
+NS_LOG_COMPONENT_DEFINE("AdrRL");
 
 NS_OBJECT_ENSURE_REGISTERED(AdrRL);
 
@@ -34,7 +34,7 @@ AdrRL::GetTypeId()
                                         "min"))
             .AddAttribute("HistoryRange",
                         "Number of packets to use for averaging",
-                        IntegerValue(4),
+                        IntegerValue(3),
                         MakeIntegerAccessor(&AdrRL::historyRange),
                         MakeIntegerChecker<int>(0, 100))
             .AddAttribute("ChangeTransmissionPower",
@@ -47,19 +47,22 @@ AdrRL::GetTypeId()
 
 AdrRL::AdrRL()
 {
+    NS_LOG_FUNCTION(this);
+    m_gymEnv = 0;
 }
 
 AdrRL::~AdrRL()
 {
+    NS_LOG_FUNCTION(this);
+    m_gymEnv = 0;
 }
 
-void 
+void
 AdrRL::CreateGymEnv()
 {
-    Ptr<LorawanGymEnv> env = CreateObject<LorawanGymEnv>();
-    // env->SetReward(m_reward);
-    // env->SetPenalty(m_penalty);
-    NS_LOG_FUNCTION(this->GetTypeId() << "Environment created: " << env);
+    Ptr<LorawanGymEnv> gymEnv = CreateObject<LorawanGymEnv>();
+    m_gymEnv = gymEnv;
+    NS_LOG_DEBUG("Gym environment created");
 }
 
 void
@@ -67,7 +70,23 @@ AdrRL::OnReceivedPacket(Ptr<const Packet> packet,
                             Ptr<EndDeviceStatus> status,
                             Ptr<NetworkStatus> networkStatus)
 {
+    // Check if the environment has been created
+    if (!m_gymEnv)
+    {
+        CreateGymEnv();
+    }
+
     NS_LOG_FUNCTION(this->GetTypeId() << packet << networkStatus);
+
+    uint32_t packetSize = packet->GetSize();
+    uint8_t *buffer = new uint8_t[packetSize];
+    packet->CopyData(buffer, packetSize);
+
+    double payloadRcv;
+    std::memcpy(&payloadRcv, buffer, sizeof(payloadRcv));
+    delete[] buffer;
+    NS_LOG_INFO("Received packet payload: " << payloadRcv);
+    m_gymEnv->SetEnrgyLevel(payloadRcv);
 
     // We will only act just before reply, when all Gateways will have received
     // the packet, since we need their respective received power.
@@ -104,12 +123,34 @@ AdrRL::BeforeSendingReply(Ptr<EndDeviceStatus> status, Ptr<NetworkStatus> networ
             // Get the device transmission power (dBm)
             uint8_t transmissionPower = status->GetMac()->GetTransmissionPower();
 
-            // New parameters for the end-device
-            uint8_t newDataRate;
-            uint8_t newTxPower;
+            // Getting the energy level of the device
+            // double energyLevel = status->GetEnergyLevel();
+            double energyLevel = 100.0;
 
-            // Adaptive Data Rate (ADR) Algorithm
-            AdrImplementation(&newDataRate, &newTxPower, status);
+            // Gettintg the SNR from the gateways
+            double m_SNR = 0;
+            double m_Rssi = 0;
+            switch (historyAveraging)
+            {
+            case AdrRL::AVERAGE:
+                m_SNR = GetAverageSNR(status->GetReceivedPacketList(), historyRange);
+                break;
+            case AdrRL::MAXIMUM:
+                m_SNR = GetMaxSNR(status->GetReceivedPacketList(), historyRange);
+                break;
+            case AdrRL::MINIMUM:
+                m_SNR = GetMinSNR(status->GetReceivedPacketList(), historyRange);
+            }
+
+            // Sending the parameters for Gym environment
+            m_gymEnv->SetRssiSnr(m_Rssi, m_SNR);
+            m_gymEnv->SetDr(SfToDr(spreadingFactor));
+            m_gymEnv->SetTxPower(GetTxPowerIndex(transmissionPower));
+            m_gymEnv->SetEnergyLevel(energyLevel);
+
+            // New parameters for the end-device
+            uint8_t newDataRate = m_gymEnv->GetNewDr();
+            uint8_t newTxPower = m_gymEnv->GetNewTxPower();
 
             // Change the power back to the default if we don't want to change it
             if (!m_toggleTxPower)
@@ -157,19 +198,6 @@ AdrRL::OnFailedReply(Ptr<EndDeviceStatus> status, Ptr<NetworkStatus> networkStat
     NS_LOG_FUNCTION(this->GetTypeId() << networkStatus);
 }
 
-void
-AdrRL::AdrImplementation(uint8_t* newDataRate,
-                                uint8_t* newTxPower,
-                                Ptr<EndDeviceStatus> status)
-{
-    uint8_t spreadingFactor = status->GetFirstReceiveWindowSpreadingFactor();
-
-    double transmissionPower = status->GetMac()->GetTransmissionPower();
-
-    *newDataRate = SfToDr(spreadingFactor);
-    *newTxPower = transmissionPower;
-}
-
 uint8_t
 AdrRL::SfToDr(uint8_t sf)
 {
@@ -197,10 +225,10 @@ AdrRL::SfToDr(uint8_t sf)
 }
 
 double
-AdrRL::RxPowerToSNR(double transmissionPower) const
+AdrRL::RxPowerToSNR(double rssi) const
 {
     // The following conversion ignores interfering packets
-    return transmissionPower + 174 - 10 * log10(B) - NF;
+    return rssi + 174 - 10 * log10(B) - NF;
 }
 
 // Get the maximum received power (it considers the values in dB!)
@@ -208,17 +236,17 @@ double
 AdrRL::GetRSSIFromGateways(EndDeviceStatus::GatewayList gwList)
 {
     auto it = gwList.begin();
-    double min = it->second.rxPower;
+    double max = it->second.rxPower;
 
     for (; it != gwList.end(); it++)
     {
-        if (it->second.rxPower < min)
+        if (it->second.rxPower > max)
         {
-            min = it->second.rxPower;
+            max = it->second.rxPower;
         }
     }
 
-    return min;
+    return max;
 }
 
 double

@@ -176,12 +176,48 @@ LorawanGymEnv::GetObservation()
     return box; 
 }
 
-void 
-LorawanGymEnv::UplinkPktTrace()
+void LorawanGymEnv::UplinkPktTrace()
 {
     NS_LOG_FUNCTION (this);
 }
 
+void 
+LorawanGymEnv::SetRssiSnr(double rssi, double snr)
+{
+    NS_LOG_FUNCTION (this);
+    m_Rssi = rssi;
+    m_Snr = snr;
+}
+
+void LorawanGymEnv::SetDr(uint8_t dr)
+{
+    NS_LOG_FUNCTION (this);
+    m_Dr = dr;
+}
+
+void LorawanGymEnv::SetTxPower(uint8_t txPower)
+{
+    NS_LOG_FUNCTION (this);
+    m_TxPower = txPower;
+}
+
+void LorawanGymEnv::SetEnergyLevel(double energyLevel)
+{
+    NS_LOG_FUNCTION (this);
+    m_EnergyLevel = energyLevel;
+}
+
+uint8_t LorawanGymEnv::GetNewDr()
+{
+    NS_LOG_FUNCTION (this);
+    return m_newDr;
+}
+
+uint8_t LorawanGymEnv::GetNewTxPower()
+{
+    NS_LOG_FUNCTION (this);
+    return m_newTxPower;
+}
 
 } // namespace lorawan
 } // namespace ns3
