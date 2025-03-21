@@ -1,4 +1,5 @@
 #include "rl_adr_env.h"
+#include "Battery-info-sender.h"
 
 #include "ns3/basic-energy-source-helper.h"
 #include "ns3/lora-radio-energy-model-helper.h"
@@ -255,12 +256,6 @@ main(int argc, char* argv[])
     helper.Install(phyHelper, macHelper, endDevices);
     NetDeviceContainer endDevicesNetDevices = helper.Install(phyHelper, macHelper, endDevices);
 
-    // Install applications in end devices
-    int appPeriodSeconds = 1200; // One packet every 20 minutes
-    PeriodicSenderHelper appHelper = PeriodicSenderHelper();
-    appHelper.SetPeriod(Seconds(appPeriodSeconds));
-    ApplicationContainer appContainer = appHelper.Install(endDevices);
-
     // Do not set spreading factors up: we will wait for the network server to do this
     if (initializeSF)
     {
@@ -298,12 +293,6 @@ main(int argc, char* argv[])
     ForwarderHelper forwarderHelper;
     forwarderHelper.Install(gateways);
 
-    // ************ Scheduling the environment ************ //
-    // We have to decicde whether we need to schedule the Gym env based on a event trigger or a time interverl
-    // Event base scheduling makes more sense here since we want to trace every packet 
-
-    
-
     /**********************************************************************************************************
     *************************************** Install Energy Model *********************************************
     **********************************************************************************************************/
@@ -336,7 +325,19 @@ main(int argc, char* argv[])
 
     //++++++++++++++++++++++++++++++++++++End of energy module configuration+++++++++++++++++++++++++++++++++++++//
     
-    
+    /********************************************************************************************************
+     ********************************** Install custom application on end devices ****************************
+     ********************************************************************************************************/
+    for (uint32_t i = 0; i < endDevices.GetN(); ++i)
+    {
+        Ptr<BatteryInfoSender> app = CreateObject<BatteryInfoSender>();
+        app->SetEnergySource(ergSources.Get(i));
+        app->SetSendInterval(Seconds(60));
+        endDevices.Get(i)->AddApplication(app);
+        app->SetStartTime(Seconds(0));
+        app->SetStopTime(Hours(24));
+    }
+
     // Connect our traces
     Config::ConnectWithoutContext(
         "/NodeList/*/DeviceList/0/$ns3::LoraNetDevice/Mac/$ns3::EndDeviceLorawanMac/TxPower",

@@ -42,7 +42,7 @@ namespace ns3
             uint32_t m_nodeId;
 
             bool m_isGameOver;
-            float m_Reward;
+            float m_Reward;  // how can we calculate reward? function definition 
             float m_penalty;
             std::string m_info;
 

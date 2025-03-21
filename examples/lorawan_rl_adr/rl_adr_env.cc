@@ -179,6 +179,7 @@ LorawanGymEnv::GetObservation()
 void LorawanGymEnv::UplinkPktTrace()
 {
     NS_LOG_FUNCTION (this);
+    Notify();
 }
 
 void 

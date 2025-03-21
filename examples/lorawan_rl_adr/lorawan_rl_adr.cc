@@ -1,5 +1,6 @@
 #include "lorawan_rl_adr.h"
 #include "rl_adr_env.h"
+#include <cstring>
 
 namespace ns3
 {
@@ -86,7 +87,7 @@ AdrRL::OnReceivedPacket(Ptr<const Packet> packet,
     std::memcpy(&payloadRcv, buffer, sizeof(payloadRcv));
     delete[] buffer;
     NS_LOG_INFO("Received packet payload: " << payloadRcv);
-    m_gymEnv->SetEnrgyLevel(payloadRcv);
+    m_gymEnv->SetEnergyLevel(payloadRcv);
 
     // We will only act just before reply, when all Gateways will have received
     // the packet, since we need their respective received power.
@@ -147,6 +148,9 @@ AdrRL::BeforeSendingReply(Ptr<EndDeviceStatus> status, Ptr<NetworkStatus> networ
             m_gymEnv->SetDr(SfToDr(spreadingFactor));
             m_gymEnv->SetTxPower(GetTxPowerIndex(transmissionPower));
             m_gymEnv->SetEnergyLevel(energyLevel);
+            
+            // Notify the Gym environment that the data is ready to process 
+            m_gymEnv->UplinkPktTrace();
 
             // New parameters for the end-device
             uint8_t newDataRate = m_gymEnv->GetNewDr();
